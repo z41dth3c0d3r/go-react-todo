@@ -1,4 +1,4 @@
-module github.com/z41dth3c0d3r/go-vue-todo
+module github.com/z41dth3c0d3r/go-react-todo
 
 go 1.23.2
 
