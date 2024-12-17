@@ -127,15 +127,21 @@ func updateTodo(c *fiber.Ctx) error {
 	}
 
 	filter := bson.M{"_id": objectId}
-	update := bson.M{"$set": bson.M{"completed": true}}
+	var todo Todo
 
-	result, err := collection.UpdateOne(context.Background(), filter, update)
+	err = collection.FindOne(context.Background(), filter).Decode(&todo)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return c.Status(404).JSON(fiber.Map{"error": "Todo not found"})
+		}
 		return err
 	}
 
-	if result.MatchedCount == 0 {
-		return c.Status(404).JSON(fiber.Map{"error": "Todo not found"})
+	update := bson.M{"$set": bson.M{"completed": !todo.Completed}}
+
+	_, err = collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return err
 	}
 
 	return c.Status(200).JSON(fiber.Map{"success": true})
